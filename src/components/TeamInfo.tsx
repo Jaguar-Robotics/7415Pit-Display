@@ -30,7 +30,7 @@ function TeamInfo(props: { teamNumber:number, activeTeam:boolean, upcomingMatch:
             //Set the team name to the data's nickname, but parse out any "The"s at the start
             setName(data.nickname.replace(/^The /i, ''))
         })
-    }, []);
+    }, [props.teamNumber]);
 
     //Load the team rank
     useEffect(() => {
@@ -82,6 +82,10 @@ function TeamInfo(props: { teamNumber:number, activeTeam:boolean, upcomingMatch:
     const checkShamBase = () => {
         CheckImage(props.teamNumber, year, jwt).then(result => {
             setImageInDataBase(result)
+
+            if(result) {
+                loadImage()
+            }
         })
     }
 
@@ -96,7 +100,7 @@ function TeamInfo(props: { teamNumber:number, activeTeam:boolean, upcomingMatch:
         setInterval(() => {
             loadImage()
         }, 600000)
-    }, [imageInDataBase]);
+    }, [imageInDataBase, props.teamNumber]);
 
     let loadImage = () => {
         if(imageInDataBase) {
@@ -121,6 +125,9 @@ function TeamInfo(props: { teamNumber:number, activeTeam:boolean, upcomingMatch:
     useEffect(() => {
         //Clear the current TBA image location (don't retain old images on match change)
         setTbaImgPath("")
+        setAvatarPath("")
+        setImageInDataBase(false)
+        setImgSrc("")
 
         fetchEPA()
         fetchTBAImage(false)
@@ -146,14 +153,19 @@ function TeamInfo(props: { teamNumber:number, activeTeam:boolean, upcomingMatch:
                 <h2 className={avatarPath === "" ? "center" : ""}>{props.teamNumber}</h2>
             </div>
             <div className={"team-name-container"}>
-                <Marquee play={playMarquee} onCycleComplete={() => {
-                    setPlayMarquee(false)
-                    setTimeout(() => setPlayMarquee(true), 10000)
-                }}>
-                    <p
-                        className={"team-name " + (!props.activeTeam ? " rank-text-inactive" : "")}
-                    ><b>{name}⠀⠀⠀</b></p>
-                </Marquee>
+                {name.length > 10 ?
+                    <Marquee play={playMarquee} onCycleComplete={() => {
+                        setPlayMarquee(false)
+                        setTimeout(() => setPlayMarquee(true), 10000)
+                    }}>
+                        <p
+                            className={"team-name " + (!props.activeTeam ? " rank-text-inactive" : "")}
+                        ><b>{name}⠀⠀⠀</b></p>
+                    </Marquee> : <p
+                        className={"team-name centered" + (!props.activeTeam ? " rank-text-inactive" : "")}
+                    ><b>{name}</b></p>
+                }
+
             </div>
             <p className={"small-info-text " + (!props.activeTeam ? "rank-text-inactive" : "")}><b>Rank: {rank}</b></p>
             {getImg()}
